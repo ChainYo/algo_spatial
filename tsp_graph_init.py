@@ -37,19 +37,19 @@ class Route:
     
     @classmethod
     def calcul_distance_route(cls, file_=[0]):
-        marque = list()
+        cls.marque = list()
         #file_.append(s)
         while file_:
             noeud = file_[0]
             del file_[0]
-            marque.append(noeud)
-            points = random.randint(0, os.gentenv("NB_LIEUX"))
-            if points not in marque:
+            cls.marque.append(noeud)
+            points = random.randint(0, int(os.getenv("NB_LIEUX"))-1)
+            if points not in cls.marque:
                 file_.append(points)
 
-        way = marque.copy()
-        way.append(0)
-        return way
+        cls.way = cls.marque.copy()
+        cls.way.append(0)
+        return cls.way
 
 class Graph():
 
@@ -98,7 +98,8 @@ c.pack()
 # Génération des lieux et enregistrement en csv
 CSV.save_graph(Graph.creation_points(int(os.getenv("NB_LIEUX")), int(os.getenv("LARGEUR")), int(os.getenv("HAUTEUR"))))
 # Affichage des points
-for k, v in CSV.charger_graph().items():
+all_points = CSV.charger_graph()
+for k, v in all_points.items():
     if k == 0:
         c.create_oval(v[0]-12, v[1]-12 ,v[0]+12, v[1]+12, fill="red")
     else:
@@ -107,7 +108,13 @@ for k, v in CSV.charger_graph().items():
 
 # Génération des chemins
 Graph.calcul_matrice_cout_od(int(os.getenv("NB_LIEUX")), int(os.getenv("LARGEUR")), int(os.getenv("HAUTEUR")))
-Route.calcul_distance_route()
+order = Route.calcul_distance_route()
+for i in order:
+    if i == 0:
+        start = all_points[i]
+    else:
+        c.create_line(start[0], start[1], all_points[i][0], all_points[i][1], dash = (5, 2))
+        start = all_points[i]
 
 # Lancement de la page
 root.mainloop()
