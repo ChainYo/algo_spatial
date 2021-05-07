@@ -20,6 +20,24 @@ class Lieu():
     def calc_distance(cls, vector1, vector2):
         return np.linalg.norm(vector1 - vector2)
 
+class Route:
+    
+    @classmethod
+    def calcul_distance_route(cls, file_=[0]):
+        marque = list()
+        #file_.append(s)
+        while file_:
+            noeud = file_[0]
+            del file_[0]
+            marque.append(noeud)
+            point = cls.batiste(noeud)
+            if point not in marque:
+                file_.append(point)
+
+        way = marque.copy()
+        way.append(0)
+        return way
+
 # Fenêtre de l'app
 root = tk.Tk()
 root.title("Challenge Spatial - Groupe 2")
