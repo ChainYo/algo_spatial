@@ -13,8 +13,3 @@ class Lieu():
     @classmethod
     def calc_distance(cls, vector1, vector2):
         return np.linalg.norm(vector1 - vector2)
-
-lieu1 = Lieu.init_lieu(4, 7)
-lieu2 = Lieu.init_lieu(9, 2)
-
-print(Lieu.calc_distance(lieu1, lieu2))
