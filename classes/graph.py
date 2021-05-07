@@ -3,7 +3,12 @@ import pandas as pd
 import tkinter as tk
 from random import *
 import time
+import os
+from dotenv import load_dotenv
+# from ..tsp_graph_init import Lieu
 
+# Chargement des variables d'environnement
+load_dotenv()
 
 class Graph():
 
@@ -13,38 +18,36 @@ class Graph():
         cls.liste_lieux = {}
 
         for i in range(NB_LIEUX):
-            cls.x = randint(1, LARGEUR)
-            cls.y = randint(1, HAUTEUR)
-            cls.liste_lieux[i]=[cls.x, cls.y]
+            cls.x = randint(20, LARGEUR)
+            cls.y = randint(20, HAUTEUR)
+            cls.liste_lieux[i]=Lieu.init_lieu(cls.x, cls.y)
 
-        # print(cls.liste_lieux)
         return cls.liste_lieux
 
 
 
-    # calculer une matrice de distances entre chaque lieu du graphe
     @classmethod
-    def calcul_matrice_cout_od(cls):
-        matrice_od = []
-        pass
+    def calcul_matrice_cout_od(cls, NB_LIEUX, LARGEUR, HAUTEUR):
+        cls.coord = cls.creation_points(NB_LIEUX, LARGEUR, HAUTEUR)
+        cls.matrix = np.zeros((NB_LIEUX, NB_LIEUX))
+        for i in range(len(cls.matrix)):
+            for j in range(len(cls.matrix[i])):
+                if cls.matrix[i,j] == 0:
+                    cls.vecteur1 = cls.coord[i]
+                    cls.vecteur2 = cls.coord[j]
+                    cls.result = Lieu.calc_distance(cls.vecteur1, cls.vecteur2)
+                    cls.matrix[i,j] = cls.result
+                    cls.matrix[j,i] = cls.result
+        print(pd.DataFrame(cls.matrix))
+        return cls.matrix
 
     @classmethod
-    def plus_proche_voisin(cls):
-        voisin_proche = ""
-        pass 
-
-    @classmethod
-    def charger_graph(cls):
-        pass
-
-    @classmethod
-    def sauvegarder_graph(cls):
-        pass 
-
-# on défini une largeur et une longueur max pour le graph
-# on renseigne un nombre
-# on créée un nombre de point avec des latitudes et longitudes aléatoires
-# on stock les points créés dans une liste 
+    def plus_proche_voisin(cls, chiffre):
+        cls.voisin_proche = np.where(cls.matrix[chiffre] == np.amin(cls.matrix[chiffre][np.nonzero(cls.matrix[chiffre])]))
+        print(cls.voisin_proche[0][0])
+        return cls.voisin_proche[0][0]
 
 
-Graph.creation_points(3, 1000, 1000)
+
+# Graph.calcul_matrice_cout_od(10, 1000, 1000)
+# Graph.plus_proche_voisin(1)
