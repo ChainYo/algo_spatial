@@ -56,11 +56,10 @@ class Route:
     @classmethod
     def calcul_distance_route(cls, route, matrice):
         cls.score = 0
-        for i in range(route):
+        for i in range(len(route) - 1):
             cls.pt_start = route[i]
             cls.pt_goal = route[i + 1]
             cls.score += matrice[cls.pt_start, cls.pt_goal]
-            print(cls.score)
         return cls.score
 
 class Graph():
@@ -122,7 +121,7 @@ for k, v in all_points.items():
 matrice = Graph.calcul_matrice_cout_od(int(os.getenv("NB_LIEUX")), all_points)
 route = Route.generation_route()
 # Génération du score de la route
-
+score = Route.calcul_distance_route(route, matrice)
 
 cnt = 0
 for i in route:
