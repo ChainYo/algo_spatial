@@ -36,23 +36,32 @@ class Lieu():
 class Route:
     
     @classmethod
-    def calcul_distance_route(cls, fifo=[0]):
+    def generation_route(cls, fifo=[0]):
         marque = list()
         #file_.append(s)
-        while len(marque) < 10:
+        while len(marque) < int(os.getenv("NB_LIEUX")):
             while fifo:
                 noeud = fifo[0]
                 del fifo[0]
                 marque.append(noeud)
                 if noeud not in marque:
-                    fifo.append(points)
+                    fifo.append(noeud)
             fifo = Graph.plus_proche_voisin(noeud)
                 
-
         way = marque.copy()
         way.append(0)
         print(way)
         return way
+
+    @classmethod
+    def calcul_distance_route(cls, route, matrice):
+        cls.score = 0
+        for i in range(route):
+            cls.pt_start = route[i]
+            cls.pt_goal = route[i + 1]
+            cls.score += matrice[cls.pt_start, cls.pt_goal]
+            print(cls.score)
+        return cls.score
 
 class Graph():
 
@@ -68,17 +77,17 @@ class Graph():
         return cls.liste_lieux
         
     @classmethod
-    def calcul_matrice_cout_od(cls, NB_LIEUX, LARGEUR, HAUTEUR):
-        cls.coord = cls.creation_points(NB_LIEUX, LARGEUR, HAUTEUR)
+    def calcul_matrice_cout_od(cls, NB_LIEUX, CSV):
+        cls.coord = np.array([v for v in CSV.values()])
         cls.matrix = np.zeros((NB_LIEUX, NB_LIEUX))
         for i in range(len(cls.matrix)):
             for j in range(len(cls.matrix[i])):
-                if cls.matrix[i,j] == 0:
+                if cls.matrix[i, j] == 0:
                     cls.vecteur1 = cls.coord[i]
                     cls.vecteur2 = cls.coord[j]
                     cls.result = Lieu.calc_distance(cls.vecteur1, cls.vecteur2)
-                    cls.matrix[i,j] = cls.result
-                    cls.matrix[j,i] = cls.result
+                    cls.matrix[i, j] = cls.result
+                    cls.matrix[j, i] = cls.result
         print(pd.DataFrame(cls.matrix))
         return cls.matrix
 
@@ -87,8 +96,6 @@ class Graph():
         new_list = list(np.argsort(cls.matrix[chiffre]))
         new_list.remove(chiffre)
         return new_list
-
-        return cls.passage
 
 # Fenêtre de l'app
 root = tk.Tk()
@@ -106,20 +113,26 @@ CSV.save_graph(Graph.creation_points(int(os.getenv("NB_LIEUX")), int(os.getenv("
 all_points = CSV.charger_graph()
 for k, v in all_points.items():
     if k == 0:
-        c.create_oval(v[0]-12, v[1]-12 ,v[0]+12, v[1]+12, fill="red")
+        c.create_oval(v[0]-12, v[1]-12 , v[0]+12, v[1]+12, fill="red")
     else:
-        c.create_oval(v[0]-12, v[1]-12 ,v[0]+12, v[1]+12)
+        c.create_oval(v[0]-12, v[1]-12 , v[0]+12, v[1]+12)
     c.create_text(v[0], v[1], text=str(k))
 
 # Génération des chemins
-Graph.calcul_matrice_cout_od(int(os.getenv("NB_LIEUX")), int(os.getenv("LARGEUR")), int(os.getenv("HAUTEUR")))
-order = Route.calcul_distance_route()
-for i in order:
-    if i == 0:
+matrice = Graph.calcul_matrice_cout_od(int(os.getenv("NB_LIEUX")), all_points)
+route = Route.generation_route()
+# Génération du score de la route
+
+
+cnt = 0
+for i in route:
+    if cnt == 0:
         start = all_points[i]
+        cnt += 1
     else:
         c.create_line(start[0], start[1], all_points[i][0], all_points[i][1], dash = (5, 2))
         start = all_points[i]
+        cnt += 1
 
 # Lancement de la page
 root.mainloop()
