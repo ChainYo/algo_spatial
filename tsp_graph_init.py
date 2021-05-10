@@ -117,21 +117,15 @@ for k, v in all_points.items():
         c.create_oval(v[0]-12, v[1]-12 , v[0]+12, v[1]+12)
     c.create_text(v[0], v[1], text=str(k))
 
-# Génération des chemins
+# Génération de la matrice de coût
 matrice = Graph.calcul_matrice_cout_od(int(os.getenv("NB_LIEUX")), all_points)
+# Génération de la route initiale
 route = Route.generation_route()
 # Génération du score de la route
 score = Route.calcul_distance_route(route, matrice)
 
-cnt = 0
-for i in route:
-    if cnt == 0:
-        start = all_points[i]
-        cnt += 1
-    else:
-        c.create_line(start[0], start[1], all_points[i][0], all_points[i][1], dash = (5, 2))
-        start = all_points[i]
-        cnt += 1
+# Création ligne
+c.create_line([all_points[i] for i in route], dash = (5, 2))
 
 # Lancement de la page
 root.mainloop()
