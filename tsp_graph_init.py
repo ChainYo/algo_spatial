@@ -96,36 +96,58 @@ class Graph():
         new_list.remove(chiffre)
         return new_list
 
-# Fenêtre de l'app
-root = tk.Tk()
-root.title("Challenge Spatial - Groupe 2")
-root.geometry("1000x1000")
-root.bind("<Escape>", lambda x: root.destroy())
+class Interface():
 
-# Ajout du canvas
-c = tk.Canvas(root, scrollregion=(0,0,500,500), height=os.getenv('HAUTEUR'), width=os.getenv('LARGEUR'))  
-c.pack()
+    @classmethod
+    def launch_app(cls):
+        cls.crea_fenetre()
+        cls.gene_route()
+        cls.root.mainloop()
 
-# Génération des lieux et enregistrement en csv
-CSV.save_graph(Graph.creation_points(int(os.getenv("NB_LIEUX")), int(os.getenv("LARGEUR")), int(os.getenv("HAUTEUR"))))
-# Affichage des points
-all_points = CSV.charger_graph()
-for k, v in all_points.items():
-    if k == 0:
-        c.create_oval(v[0]-12, v[1]-12 , v[0]+12, v[1]+12, fill="red")
-    else:
-        c.create_oval(v[0]-12, v[1]-12 , v[0]+12, v[1]+12)
-    c.create_text(v[0], v[1], text=str(k))
+    @classmethod
+    def crea_fenetre(cls):
+        cls.root = tk.Tk()
+        cls.root.title("Challenge Spatial - Groupe 2")
+        cls.root.geometry("1000x1000")
+        cls.root.bind("<Escape>", lambda x: cls.root.destroy())
+        cls.crea_canva()
 
-# Génération de la matrice de coût
-matrice = Graph.calcul_matrice_cout_od(int(os.getenv("NB_LIEUX")), all_points)
-# Génération de la route initiale
-route = Route.generation_route()
-# Génération du score de la route
-score = Route.calcul_distance_route(route, matrice)
+    @classmethod
+    def crea_canva(cls):
+        cls.canva = tk.Canvas(cls.root, scrollregion=(0,0,500,500), height=os.getenv('HAUTEUR'), width=os.getenv('LARGEUR'))  
+        cls.canva.pack()
+        cls.aff_points()
 
-# Création ligne
-c.create_line([all_points[i] for i in route], dash = (5, 2))
+    @classmethod
+    def aff_points(cls):
+        # Génération des lieux et enregistrement en csv
+        CSV.save_graph(Graph.creation_points(int(os.getenv("NB_LIEUX")), int(os.getenv("LARGEUR")), int(os.getenv("HAUTEUR"))))
+        # Affichage des points
+        cls.all_points = CSV.charger_graph()
+        for k, v in cls.all_points.items():
+            if k == 0:
+                cls.canva.create_oval(v[0]-12, v[1]-12 , v[0]+12, v[1]+12, fill="red")
+            else:
+                cls.canva.create_oval(v[0]-12, v[1]-12 , v[0]+12, v[1]+12)
+            cls.canva.create_text(v[0], v[1], text=str(k))
+        cls.gene_matrice_cout()
+    
+    @classmethod
+    def gene_matrice_cout(cls):
+        cls.matrice = Graph.calcul_matrice_cout_od(int(os.getenv("NB_LIEUX")), cls.all_points)
 
-# Lancement de la page
-root.mainloop()
+    @classmethod
+    def gene_route(cls):    
+        cls.route = Route.generation_route()
+        cls.gene_score_route()
+        cls.create_line()
+
+    @classmethod
+    def gene_score_route(cls):
+        cls.score = Route.calcul_distance_route(cls.route, cls.matrice)
+
+    @classmethod
+    def create_line(cls):
+        cls.canva.create_line([cls.all_points[i] for i in cls.route], dash = (5, 2))
+
+Interface.launch_app()
