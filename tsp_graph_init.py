@@ -37,20 +37,20 @@ class Route:
     
     @classmethod
     def generation_route(cls, fifo=[0]):
-        marque = list()
-        #file_.append(s)
-        while len(marque) < int(os.getenv("NB_LIEUX")):
-            while fifo:
-                noeud = fifo[0]
-                del fifo[0]
-                marque.append(noeud)
-                if noeud not in marque:
-                    fifo.append(noeud)
-            fifo = Graph.plus_proche_voisin(noeud)
-                
-        way = marque.copy()
-        way.append(0)
-        print(way)
+        marquer = []
+        while fifo:
+            noeud = fifo[0]
+            #print(noeud)
+            del fifo[0]
+            marquer.append(noeud)
+            voisin = Graph().plus_proche_voisin(noeud)
+            #print(marquer)
+            for i in voisin:
+                if i not in marquer:
+                    fifo.append(i)
+                    break
+        marquer.append(0)
+        way = marquer
         return way
 
     @classmethod
