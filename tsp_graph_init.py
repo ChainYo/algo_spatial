@@ -103,8 +103,8 @@ class AlgoGen():
         return sorted(liste, key=lambda k: k['score']) 
 
     @classmethod
-    def mutation(cls, mutant):
-        cpt = round(len(mutant) / 3)
+    def mutation(cls, mutant, n=3):
+        cpt = round(len(mutant) / n)
         if cpt == 1:
             cpt = 2
         index = random.randint(0, len(mutant) - 3)
