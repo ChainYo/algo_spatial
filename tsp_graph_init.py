@@ -103,16 +103,6 @@ class AlgoGen():
         return sorted(liste, key=lambda k: k['score']) 
 
     @classmethod
-    def cross_over(cls, n, p1, p2):
-        enfant = p2[1:3]
-        for i in p1[1:-1]:
-            if i not in enfant:
-                enfant.append(i)
-        enfant.append(0)
-        enfant.insert(0,0)
-        return enfant
-
-    @classmethod
     def mutation(cls, mutant):
         cpt = round(len(mutant) / 3)
         if cpt == 1:
