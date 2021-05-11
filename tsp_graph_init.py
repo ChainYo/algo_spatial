@@ -100,10 +100,10 @@ class AlgoGen():
     
     @classmethod
     def selection(cls, liste):
-        return sorted(liste, key=lambda k: k['score']) 
+        return sorted(liste, key=lambda k: k['score'])[:10]
 
     @classmethod
-    def mutation(cls, mutant, n=3):
+    def mutation(cls, mutant, n = 3):
         cpt = round(len(mutant) / n)
         if cpt == 1:
             cpt = 2
@@ -112,11 +112,20 @@ class AlgoGen():
         return mutant
 
     @classmethod
+    def cross_over(cls, n, p1, p2):
+        enfant = p2[1:n]
+        for i in p1[1:-1]:
+            if i not in enfant:
+                enfant.append(i)
+        enfant.append(0)
+        enfant.insert(0,0)
+        return enfant
+
+    @classmethod
     def init_parents(cls, parent):
-        cls.first_parent = parent[1 : -1]
-        cls.population = [cls.first_parent]
+        cls.population = [parent]
         for _ in range(9):
-            cls.population.append(random.sample(cls.first_parent, k = len(cls.first_parent)))
+            cls.population.append([0] + random.sample(parent[1 : -1], k = len(parent[1 : -1])) + [0])
         return cls.population
 
     @classmethod
@@ -124,7 +133,29 @@ class AlgoGen():
         cls.scores_routes = []
         for i in liste:
             cls.scores_routes.append({"route": i, "score": Route.calcul_distance_route(i, matrice)})
-        print(cls.scores_routes)
+        return cls.scores_routes
+
+    @classmethod
+    def crea_couple(cls):
+        cls.index_couple = list(range(10))
+        random.shuffle(cls.index_couple)
+        cls.couples = []
+        for i in range(0, len(cls.index_couple), 2):
+            cls.couples.append([cls.index_couple[i], cls.index_couple[i+1]])
+        return cls.couples
+
+    @classmethod
+    def reproduction(cls, population, matrice):
+        cls.enfants = []
+        for _ in range(int(os.getenv("TAUX_REPRODUCTION"))):
+            for i in cls.crea_couple():
+                cls.enfants.append(cls.cross_over(round(len(population)/3), population[i[0]]["route"], population[i[1]]["route"]))
+        # map(cls.mutation, cls.enfants[random.randint(0, len(cls.enfants)-1)])
+        cls.enfants_notes = cls.calc_score(cls.enfants, matrice)
+        for enfant in cls.enfants_notes:
+            if enfant not in population:
+                population.append(enfant)
+        return cls.selection(population)
 
 class Interface():
 
@@ -132,8 +163,16 @@ class Interface():
     def launch_app(cls):
         cls.crea_fenetre()
         cls.gene_route()
-        cls.population = AlgoGen.init_parents(cls.route)
-        print(AlgoGen.calc_score(cls.population, cls.matrice))
+        cls.population = AlgoGen.calc_score(AlgoGen.init_parents(cls.route), cls.matrice)
+        for i in range(100):
+            cls.population = AlgoGen.reproduction(cls.population, cls.matrice)
+            print(f"Génération n°{i}")
+            print(cls.population[0]["score"])
+            print(cls.population[1]["score"])
+            print(cls.population[2]["score"])
+            print(cls.population[3]["score"])
+            print(cls.population[4]["score"])
+            print("============================")
         cls.root.mainloop()
 
     @classmethod
