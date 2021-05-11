@@ -87,7 +87,6 @@ class Graph():
                     cls.result = Lieu.calc_distance(cls.vecteur1, cls.vecteur2)
                     cls.matrix[i, j] = cls.result
                     cls.matrix[j, i] = cls.result
-        print(pd.DataFrame(cls.matrix))
         return cls.matrix
 
     @classmethod
@@ -112,14 +111,16 @@ class AlgoGen():
         return mutant
 
     @classmethod
-    def cross_over(cls, n, p1, p2):
-        enfant = p2[1:n]
-        for i in p1[1:-1]:
-            if i not in enfant:
-                enfant.append(i)
-        enfant.append(0)
-        enfant.insert(0,0)
-        return enfant
+    def cross_over(cls, p1, p2):
+        index = random.randint(1, len(p1)-2)
+        cpt =  round((len(p1) - index) / 2)
+        p1 = (random.sample(p2[index:index+cpt], k=cpt))
+        for i in p2[1 : -1]:
+            if i not in p1:
+                p1.append(i)
+        p1.append(0)
+        p1.insert(0, 0)
+        return(p1)
 
     @classmethod
     def init_parents(cls, parent):
@@ -149,7 +150,7 @@ class AlgoGen():
         cls.enfants = []
         for _ in range(int(os.getenv("TAUX_REPRODUCTION"))):
             for i in cls.crea_couple():
-                cls.enfants.append(cls.cross_over(round(len(population)/3), population[i[0]]["route"], population[i[1]]["route"]))
+                cls.enfants.append(cls.cross_over(population[i[0]]["route"], population[i[1]]["route"]))
         # map(cls.mutation, cls.enfants[random.randint(0, len(cls.enfants)-1)])
         cls.enfants_notes = cls.calc_score(cls.enfants, matrice)
         for enfant in cls.enfants_notes:
@@ -167,11 +168,9 @@ class Interface():
         for i in range(100):
             cls.population = AlgoGen.reproduction(cls.population, cls.matrice)
             print(f"Génération n°{i}")
-            print(cls.population[0]["score"])
-            print(cls.population[1]["score"])
-            print(cls.population[2]["score"])
-            print(cls.population[3]["score"])
-            print(cls.population[4]["score"])
+            print(cls.population[0]["score"], cls.population[0]["route"])
+            print(cls.population[1]["score"], cls.population[1]["route"])
+            print(cls.population[2]["score"], cls.population[2]["route"])
             print("============================")
         cls.root.mainloop()
 
