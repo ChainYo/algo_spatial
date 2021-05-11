@@ -96,6 +96,31 @@ class Graph():
         new_list.remove(chiffre)
         return new_list
 
+class AlgoGen():
+    
+    @classmethod
+    def selection(cls, liste):
+        return sorted(liste, key=lambda k: k['score']) 
+
+    @classmethod
+    def cross_over(n, p1, p2):
+        enfant = p2[1:3]
+        for i in p1[1:-1]:
+            if i not in enfant:
+                enfant.append(i)
+        enfant.append(0)
+        enfant.insert(0,0)
+        return enfant
+
+    @classmethod
+    def init_parents(cls, parent):
+        cls.first_parent = parent[1 : -1]
+        cls.population = [cls.first_parent]
+        for _ in range(9):
+            cls.population.append(random.sample(cls.first_parent, k = len(cls.first_parent)))
+        return cls.population
+
+
 class Interface():
 
     @classmethod
@@ -150,4 +175,6 @@ class Interface():
     def create_line(cls):
         cls.canva.create_line([cls.all_points[i] for i in cls.route], dash = (5, 2))
 
-Interface.launch_app()
+# Interface.launch_app()
+
+AlgoGen.init_parents([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
