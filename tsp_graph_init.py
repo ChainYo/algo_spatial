@@ -103,7 +103,7 @@ class AlgoGen():
         return sorted(liste, key=lambda k: k['score']) 
 
     @classmethod
-    def cross_over(n, p1, p2):
+    def cross_over(cls, n, p1, p2):
         enfant = p2[1:3]
         for i in p1[1:-1]:
             if i not in enfant:
@@ -113,6 +113,15 @@ class AlgoGen():
         return enfant
 
     @classmethod
+    def mutation(cls, mutant):
+        cpt = round(len(mutant) / 3)
+        if cpt == 1:
+            cpt = 2
+        index = random.randint(0, len(mutant) - 3)
+        mutant[index: index + cpt] = random.sample(mutant[index: index + cpt], k = cpt)
+        return mutant
+
+    @classmethod
     def init_parents(cls, parent):
         cls.first_parent = parent[1 : -1]
         cls.population = [cls.first_parent]
@@ -120,6 +129,12 @@ class AlgoGen():
             cls.population.append(random.sample(cls.first_parent, k = len(cls.first_parent)))
         return cls.population
 
+    @classmethod
+    def calc_score(cls, liste, matrice):
+        cls.scores_routes = []
+        for i in liste:
+            cls.scores_routes.append({"route": i, "score": Route.calcul_distance_route(i, matrice)})
+        print(cls.scores_routes)
 
 class Interface():
 
@@ -127,6 +142,8 @@ class Interface():
     def launch_app(cls):
         cls.crea_fenetre()
         cls.gene_route()
+        cls.population = AlgoGen.init_parents(cls.route)
+        print(AlgoGen.calc_score(cls.population, cls.matrice))
         cls.root.mainloop()
 
     @classmethod
@@ -175,6 +192,4 @@ class Interface():
     def create_line(cls):
         cls.canva.create_line([cls.all_points[i] for i in cls.route], dash = (5, 2))
 
-# Interface.launch_app()
-
-AlgoGen.init_parents([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+Interface.launch_app()
