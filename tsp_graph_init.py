@@ -40,11 +40,9 @@ class Route:
         marquer = []
         while fifo:
             noeud = fifo[0]
-            #print(noeud)
             del fifo[0]
             marquer.append(noeud)
             voisin = Graph().plus_proche_voisin(noeud)
-            #print(marquer)
             for i in voisin:
                 if i not in marquer:
                     fifo.append(i)
@@ -67,12 +65,10 @@ class Graph():
     @classmethod
     def creation_points(cls, NB_LIEUX, LARGEUR, HAUTEUR):
         cls.liste_lieux = {}
-
         for i in range(NB_LIEUX):
             cls.x = random.randint(20, LARGEUR-20)
             cls.y = random.randint(20, HAUTEUR-20)
             cls.liste_lieux[i]=Lieu.init_lieu(cls.x, cls.y)
-
         return cls.liste_lieux
         
     @classmethod
@@ -151,57 +147,12 @@ class AlgoGen():
         for _ in range(int(os.getenv("TAUX_REPRODUCTION"))):
             for i in cls.crea_couple():
                 cls.enfants.append(cls.cross_over(population[i[0]]["route"], population[i[1]]["route"]))
-        # map(cls.mutation, cls.enfants[random.randint(0, len(cls.enfants)-1)])
         cls.enfants_notes = cls.calc_score(cls.enfants, matrice)
         for enfant in cls.enfants_notes:
             if enfant not in population:
                 population.append(enfant)
         return cls.selection(population)
 
-class Interface():
-
-    @classmethod
-    def launch_app(cls):
-        cls.crea_fenetre()
-        cls.gene_route()
-        cls.population = AlgoGen.calc_score(AlgoGen.init_parents(cls.route), cls.matrice)
-        for i in range(100):
-            cls.population = AlgoGen.reproduction(cls.population, cls.matrice)
-            print(f"Génération n°{i}")
-            print(cls.population[0]["score"], cls.population[0]["route"])
-            print(cls.population[1]["score"], cls.population[1]["route"])
-            print(cls.population[2]["score"], cls.population[2]["route"])
-            print("============================")
-        cls.root.mainloop()
-
-    @classmethod
-    def crea_fenetre(cls):
-        cls.root = tk.Tk()
-        cls.root.title("Challenge Spatial - Groupe 2")
-        cls.root.geometry("1000x1000")
-        cls.root.bind("<Escape>", lambda x: cls.root.destroy())
-        cls.crea_canva()
-
-    @classmethod
-    def crea_canva(cls):
-        cls.canva = tk.Canvas(cls.root, scrollregion=(0,0,500,500), height=os.getenv('HAUTEUR'), width=os.getenv('LARGEUR'))  
-        cls.canva.pack()
-        cls.aff_points()
-
-    @classmethod
-    def aff_points(cls):
-        # Génération des lieux et enregistrement en csv
-        CSV.save_graph(Graph.creation_points(int(os.getenv("NB_LIEUX")), int(os.getenv("LARGEUR")), int(os.getenv("HAUTEUR"))))
-        # Affichage des points
-        cls.all_points = CSV.charger_graph()
-        for k, v in cls.all_points.items():
-            if k == 0:
-                cls.canva.create_oval(v[0]-12, v[1]-12 , v[0]+12, v[1]+12, fill="red")
-            else:
-                cls.canva.create_oval(v[0]-12, v[1]-12 , v[0]+12, v[1]+12)
-            cls.canva.create_text(v[0], v[1], text=str(k))
-        cls.gene_matrice_cout()
-    
     @classmethod
     def gene_matrice_cout(cls):
         cls.matrice = Graph.calcul_matrice_cout_od(int(os.getenv("NB_LIEUX")), cls.all_points)
@@ -210,14 +161,64 @@ class Interface():
     def gene_route(cls):    
         cls.route = Route.generation_route()
         cls.gene_score_route()
-        cls.create_line()
 
     @classmethod
     def gene_score_route(cls):
         cls.score = Route.calcul_distance_route(cls.route, cls.matrice)
 
     @classmethod
-    def create_line(cls):
-        cls.canva.create_line([cls.all_points[i] for i in cls.route], dash = (5, 2))
+    def run_algo(cls):
+        while True:
+            cls.population = cls.reproduction(cls.population, cls.matrice)    
+            yield cls.population      
 
-Interface.launch_app()
+    @classmethod
+    def launch(cls, affichage):
+        CSV.save_graph(Graph.creation_points(int(os.getenv("NB_LIEUX")), int(os.getenv("LARGEUR")), int(os.getenv("HAUTEUR"))))
+        cls.all_points = CSV.charger_graph()
+        affichage.crea_fenetre(cls.all_points)
+        cls.gene_matrice_cout()
+        cls.gene_route()
+        cls.population = cls.calc_score(cls.init_parents(cls.route), cls.matrice)
+        cls.generator = cls.run_algo()
+        for item in cls.generator:
+            affichage.create_line(cls.all_points, item)
+            affichage.canva.update()
+        
+class Interface():
+
+    @classmethod
+    def crea_fenetre(cls, points):
+        cls.root = tk.Tk()
+        cls.root.title("Challenge Spatial - Groupe 2")
+        cls.root.geometry("1000x1000")
+        cls.root.bind("<Escape>", lambda x: cls.root.destroy())
+        cls.canva = tk.Canvas(cls.root, scrollregion=(0,0,500,500), height=os.getenv('HAUTEUR'), width=os.getenv('LARGEUR'))  
+        cls.canva.pack()
+
+
+    @classmethod
+    def create_line(cls, points, routes):
+        cls.canva.delete("all")
+        cnt = 0
+        for route in routes:
+            if cnt > 0:
+                second_layer = cls.canva.create_line([points[i] for i in route["route"]], dash=(5, 2), fill="#CDC9C9")
+                cls.canva.tag_lower(second_layer)
+                cnt += 1
+            else:
+                first_layer = cls.canva.create_line([points[i] for i in route["route"]], fill="blue")
+                cls.canva.tag_raise(first_layer)
+                cnt += 1
+        for k, v in points.items():
+            if k == 0:
+                cls.canva.create_oval(v[0]-12, v[1]-12 , v[0]+12, v[1]+12, fill="red")
+            else:
+                cls.canva.create_oval(v[0]-12, v[1]-12 , v[0]+12, v[1]+12, fill="#CDC9C9")
+            cls.canva.create_text(v[0], v[1], text=str(k))
+    
+    @classmethod
+    def update(cls):
+        cls.canva.update()
+
+AlgoGen.launch(Interface)
