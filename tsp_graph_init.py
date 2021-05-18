@@ -111,6 +111,8 @@ class AlgoGen():
         index = random.randint(1, len(p1)-2)
         cpt =  round((len(p1) - index) / 2)
         p1 = (random.sample(p2[index:index+cpt], k=cpt))
+        # Voir pour supprimer les éléments sélectionnés de P1 dans P2
+        # Insérer à un endroit random dans P2
         for i in p2[1 : -1]:
             if i not in p1:
                 p1.append(i)
