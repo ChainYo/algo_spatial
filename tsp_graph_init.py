@@ -95,7 +95,7 @@ class AlgoGen():
     
     @classmethod
     def selection(cls, liste):
-        return sorted(liste, key=lambda k: k['score'])[:10]
+        return sorted(liste, key=lambda k: k['score'])[:25]
 
     @classmethod
     def mutation(cls, mutant):
@@ -171,8 +171,11 @@ class AlgoGen():
         cls.population = cls.calc_score(cls.init_parents(cls.route), cls.matrice)
         cls.generator = cls.run_algo()
         cls.generator_cnt = 0
+        cls.top_score = [{"score": 0, "iter":0}]
         for item in cls.generator:
-            affichage.create_line(cls.all_points, item, cls.generator_cnt)
+            if item[0]["score"] < cls.top_score[-1]["score"] or cls.top_score[-1]["score"] == 0:
+                cls.top_score.append({"score": item[0]["score"], "iter": cls.generator_cnt})
+            affichage.create_line(cls.all_points, item, cls.generator_cnt, cls.top_score)
             affichage.canva.update()
             cls.generator_cnt += 1
         
@@ -188,14 +191,14 @@ class Interface():
         cls.canva.pack(expand="True")
         cls.lab_text = tk.StringVar()
         cls.lab_text.set("Génération n°0")
-        cls.lab = tk.Label(cls.root, textvariable=cls.lab_text, fg="blue")
+        cls.lab = tk.Label(cls.root, textvariable=cls.lab_text, fg="#715ec1")
         cls.lab.pack(expand="True")
 
 
     @classmethod
-    def create_line(cls, points, routes, counter):
+    def create_line(cls, points, routes, counter, top_score):
         cls.canva.delete("all")
-        cls.lab_text.set(f"Génération n°{counter} - Top Score: {routes[0]['score']}")
+        cls.lab_text.set(f"Génération n°{counter}\nTop Score: {top_score[-1]['score']} (+ {round(top_score[-2]['score'] - top_score[-1]['score'], 3)}) trouvé en {top_score[-1]['iter']} (+ {top_score[-1]['iter'] - top_score[-2]['iter']}) itérations.")
         cnt = 0
         for route in routes:
             if cnt > 0:
