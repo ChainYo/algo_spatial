@@ -98,12 +98,9 @@ class AlgoGen():
         return sorted(liste, key=lambda k: k['score'])[:10]
 
     @classmethod
-    def mutation(cls, mutant, n = 3):
-        cpt = round(len(mutant) / n)
-        if cpt == 1:
-            cpt = 2
-        index = random.randint(0, len(mutant) - 3)
-        mutant[index: index + cpt] = random.sample(mutant[index: index + cpt], k = cpt)
+    def mutation(cls, mutant):
+        index, index2 = random.randint(1, len(mutant)-2), random.randint(1, len(mutant)-2)
+        mutant[index], mutant[index2] = mutant[index2], mutant[index]
         return mutant
 
     @classmethod
@@ -138,11 +135,11 @@ class AlgoGen():
         for _ in range(int(os.getenv("TAUX_REPRODUCTION"))):
             cls.enfants.append(cls.cross_over(random.sample(population, k=1)[0]['route'], random.sample(population, k=1)[0]['route']))
         cls.enfants_notes = cls.calc_score(cls.enfants, matrice)
-        print(len(population))
         for enfant in cls.enfants_notes:
+            if random.random() > 0.9:
+                enfant["route"] = cls.mutation(enfant["route"])
             if enfant["route"] not in [i["route"] for i in population]:
                 population.append(enfant)
-        print(len(population))
         return cls.selection(population)
 
     @classmethod
