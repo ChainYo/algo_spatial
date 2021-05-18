@@ -135,24 +135,16 @@ class AlgoGen():
         return cls.scores_routes
 
     @classmethod
-    def crea_couple(cls):
-        cls.index_couple = list(range(10))
-        random.shuffle(cls.index_couple)
-        cls.couples = []
-        for i in range(0, len(cls.index_couple), 2):
-            cls.couples.append([cls.index_couple[i], cls.index_couple[i+1]])
-        return cls.couples
-
-    @classmethod
     def reproduction(cls, population, matrice):
         cls.enfants = []
         for _ in range(int(os.getenv("TAUX_REPRODUCTION"))):
-            for i in cls.crea_couple():
-                cls.enfants.append(cls.cross_over(population[i[0]]["route"], population[i[1]]["route"]))
+            cls.enfants.append(cls.cross_over(random.sample(population, k=1)[0]['route'], random.sample(population, k=1)[0]['route']))
         cls.enfants_notes = cls.calc_score(cls.enfants, matrice)
+        print(len(population))
         for enfant in cls.enfants_notes:
             if enfant not in population:
                 population.append(enfant)
+        print(len(population))
         return cls.selection(population)
 
     @classmethod
@@ -208,7 +200,7 @@ class Interface():
     @classmethod
     def create_line(cls, points, routes, counter):
         cls.canva.delete("all")
-        cls.lab_text.set(f"Génération n°{counter}")
+        cls.lab_text.set(f"Génération n°{counter} - Top Score: {routes[0]['score']}")
         cnt = 0
         for route in routes:
             if cnt > 0:
