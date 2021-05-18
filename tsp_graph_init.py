@@ -109,16 +109,16 @@ class AlgoGen():
     @classmethod
     def cross_over(cls, p1, p2):
         index = random.randint(1, len(p1)-2)
-        cpt =  round((len(p1) - index) / 2)
-        p1 = (random.sample(p2[index:index+cpt], k=cpt))
+        cpt =  round((len(p1[1 : -1]) - index))
+        p1 = p2[index:index+cpt]
         # Voir pour supprimer les éléments sélectionnés de P1 dans P2
         # Insérer à un endroit random dans P2
         for i in p2[1 : -1]:
             if i not in p1:
-                p1.append(i)
+                p1.insert(cpt, i)
         p1.append(0)
         p1.insert(0, 0)
-        return(p1)
+        return p1
 
     @classmethod
     def init_parents(cls, parent):
@@ -183,9 +183,11 @@ class AlgoGen():
         cls.gene_route()
         cls.population = cls.calc_score(cls.init_parents(cls.route), cls.matrice)
         cls.generator = cls.run_algo()
+        cls.generator_cnt = 0
         for item in cls.generator:
-            affichage.create_line(cls.all_points, item)
+            affichage.create_line(cls.all_points, item, cls.generator_cnt)
             affichage.canva.update()
+            cls.generator_cnt += 1
         
 class Interface():
 
@@ -196,12 +198,17 @@ class Interface():
         cls.root.geometry("1000x1000")
         cls.root.bind("<Escape>", lambda x: cls.root.destroy())
         cls.canva = tk.Canvas(cls.root, scrollregion=(0,0,500,500), height=os.getenv('HAUTEUR'), width=os.getenv('LARGEUR'))  
-        cls.canva.pack()
+        cls.canva.pack(expand="True")
+        cls.lab_text = tk.StringVar()
+        cls.lab_text.set("Génération n°0")
+        cls.lab = tk.Label(cls.root, textvariable=cls.lab_text)
+        cls.lab.pack(expand="True")
 
 
     @classmethod
-    def create_line(cls, points, routes):
+    def create_line(cls, points, routes, counter):
         cls.canva.delete("all")
+        cls.lab_text.set(f"Génération n°{counter}")
         cnt = 0
         for route in routes:
             if cnt > 0:
