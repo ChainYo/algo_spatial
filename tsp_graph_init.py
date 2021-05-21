@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd 
 import tkinter as tk
 import random
-import time
 import os
 
 from dotenv import load_dotenv
@@ -10,17 +9,21 @@ from dotenv import load_dotenv
 # Chargement des variables d'environnement
 load_dotenv()
 
+# Seed
+random.seed(1)
+np.random.seed(1)
+
 class CSV():
 
     @classmethod
-    def charger_graph(cls):
-        cls.df  = pd.read_csv("coord.csv")
-        cls.df_to_dict = dict([(i,[a,b]) for i, a,b in zip(cls.df.index, cls.df.X, cls.df.Y)])
+    def charger_graph(cls, CSV):
+        cls.df  = pd.read_csv(CSV)
+        cls.df_to_dict = dict([(i,[a,b]) for i, a,b in zip(cls.df.index, cls.df.x, cls.df.y)])
         return cls.df_to_dict
 
     @classmethod
     def save_graph(cls, value):
-        cls.df = pd.DataFrame.from_dict(data=value, orient='index', columns=['X', 'Y'])
+        cls.df = pd.DataFrame.from_dict(data=value, orient='index', columns=['x', 'y'])
         cls.df.to_csv('coord.csv', index=False)
 
 class Lieu():
@@ -164,7 +167,7 @@ class AlgoGen():
     @classmethod
     def launch(cls, affichage):
         CSV.save_graph(Graph.creation_points(int(os.getenv("NB_LIEUX")), int(os.getenv("LARGEUR")), int(os.getenv("HAUTEUR"))))
-        cls.all_points = CSV.charger_graph()
+        cls.all_points = CSV.charger_graph(os.getenv("CSV"))
         affichage.crea_fenetre(cls.all_points)
         cls.gene_matrice_cout()
         cls.gene_route()
@@ -185,10 +188,10 @@ class Interface():
     def crea_fenetre(cls, points):
         cls.root = tk.Tk()
         cls.root.title("Challenge Spatial - Groupe 2")
-        cls.root.geometry("1000x1000")
+        cls.root.geometry("1200x700")
         cls.root.bind("<Escape>", lambda x: cls.root.destroy())
         cls.canva = tk.Canvas(cls.root, scrollregion=(0,0,500,500), height=os.getenv('HAUTEUR'), width=os.getenv('LARGEUR'))  
-        cls.canva.pack(expand="True")
+        cls.canva.pack(expand=True)
         cls.lab_text = tk.StringVar()
         cls.lab_text.set("Génération n°0")
         cls.lab = tk.Label(cls.root, textvariable=cls.lab_text, fg="#715ec1")
@@ -198,7 +201,7 @@ class Interface():
     @classmethod
     def create_line(cls, points, routes, counter, top_score):
         cls.canva.delete("all")
-        cls.lab_text.set(f"Génération n°{counter}\nTop Score: {top_score[-1]['score']} (+ {round(top_score[-2]['score'] - top_score[-1]['score'], 3)}) trouvé en {top_score[-1]['iter']} (+ {top_score[-1]['iter'] - top_score[-2]['iter']}) itérations.")
+        cls.lab_text.set(f"Génération n°{counter}\nTop Score: {top_score[-1]['score']} (-{round(top_score[-2]['score'] - top_score[-1]['score'], 3)}) trouvé en {top_score[-1]['iter']} (+ {top_score[-1]['iter'] - top_score[-2]['iter']}) itérations.")
         cnt = 0
         for route in routes:
             if cnt > 0:
